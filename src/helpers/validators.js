@@ -30,6 +30,7 @@ import {
   zipWith,
   lt,
   lte,
+  all,
 } from "ramda";
 import { COLORS, SHAPES } from "../constants";
 
@@ -85,7 +86,8 @@ export const validateFieldN5 = () => false;
 export const validateFieldN6 = () => false;
 
 // 7. Все фигуры оранжевые.
-export const validateFieldN7 = () => false;
+export const validateFieldN7 = compose(all(isOrange), getShapes);
+// export const validateFieldN7 = () => false;
 
 // 8. Не красная и не белая звезда, остальные – любого цвета.
 export const validateFieldN8 = () => false;
