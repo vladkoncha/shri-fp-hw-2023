@@ -13,17 +13,29 @@
  * Если какие-либо функции написаны руками (без использования библиотек) это не является ошибкой
  */
 import {
+  __,
   all,
   allPass,
+  any,
+  complement,
   compose,
+  countBy,
+  dissoc,
   equals,
   filter,
+  gte,
+  identity,
   length,
   lte,
   prop,
   props,
+  values,
 } from "ramda";
 import { COLORS, SHAPES } from "../constants";
+
+// LOGIC
+const greaterEqualThree = gte(__, 3);
+const anyGreaterEqualThree = any(greaterEqualThree);
 
 // COLORS
 const isRed = equals(COLORS.RED);
@@ -31,6 +43,12 @@ const isBlue = equals(COLORS.BLUE);
 const isOrange = equals(COLORS.ORANGE);
 const isGreen = equals(COLORS.GREEN);
 const isWhite = equals(COLORS.WHITE);
+
+const isNotWhite = complement(equals(COLORS.WHITE));
+
+const dissocWhite = dissoc(COLORS.WHITE);
+const colorsCounterMap = compose(countBy(identity), values);
+const colorsCounterMapWithoutWhite = compose(dissocWhite, colorsCounterMap);
 
 // SHAPES
 const getShapes = props([
@@ -54,7 +72,7 @@ const isOrangeSquare = compose(isOrange, getSquare);
 const isWhiteTriangle = compose(isWhite, getTriangle);
 const isRedStar = compose(isRed, getStar);
 
-const atLeastTwoPiecesGreen = compose(lte(2), length, filter(isGreen));
+const atLeastTwoShapesGreen = compose(lte(2), length, filter(isGreen));
 const compareRedsAndBlues = (colorsArray) => {
   const blues = filter(isBlue, colorsArray);
   const reds = filter(isRed, colorsArray);
@@ -68,7 +86,7 @@ export const validateFieldN1 = compose(
 );
 
 // 2. Как минимум две фигуры зеленые.
-export const validateFieldN2 = compose(atLeastTwoPiecesGreen, getShapes);
+export const validateFieldN2 = compose(atLeastTwoShapesGreen, getShapes);
 
 // 3. Количество красных фигур равно кол-ву синих.
 export const validateFieldN3 = compose(compareRedsAndBlues, getShapes);
@@ -79,7 +97,11 @@ export const validateFieldN4 = compose(
 );
 
 // 5. Три фигуры одного любого цвета кроме белого (четыре фигуры одного цвета – это тоже true).
-export const validateFieldN5 = () => false;
+export const validateFieldN5 = compose(
+  anyGreaterEqualThree,
+  values,
+  colorsCounterMapWithoutWhite
+);
 
 // 6. Ровно две зеленые фигуры (одна из зелёных – это треугольник), плюс одна красная. Четвёртая оставшаяся любого доступного цвета, но не нарушающая первые два условия
 export const validateFieldN6 = () => false;
