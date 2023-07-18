@@ -72,15 +72,22 @@ const isWhiteCircle = compose(isWhite, getCircle);
 const isBlueCircle = compose(isBlue, getCircle);
 
 const isGreenSquare = compose(isGreen, getSquare);
+const isWhiteSquare = compose(isWhite, getSquare);
+const isNotWhiteSquare = complement(isWhiteSquare);
 const isOrangeSquare = compose(isOrange, getSquare);
 
 const isWhiteTriangle = compose(isWhite, getTriangle);
+const isNotWhiteTriangle = complement(isWhiteTriangle);
 const isGreenTriangle = compose(isGreen, getTriangle);
 
 const isRedStar = compose(isRed, getStar);
 const isWhiteStar = compose(isWhite, getStar);
 const isNotRedStar = complement(isRedStar);
 const isNotWhiteStar = complement(isWhiteStar);
+
+
+// SPECIFIC LOGIC
+const triangleColorEqualsSquare = ({ square, triangle }) => square === triangle;
 
 const atLeastTwoShapesGreen = compose(lte(2), length, filter(isGreen));
 const compareRedsAndBlues = (colorsArray) => {
@@ -136,4 +143,8 @@ export const validateFieldN8 = allPass([isNotRedStar, isNotWhiteStar]);
 export const validateFieldN9 = compose(all(isGreen), getShapes);
 
 // 10. Треугольник и квадрат одного цвета (не белого), остальные – любого цвета
-export const validateFieldN10 = () => false;
+export const validateFieldN10 = allPass([
+  isNotWhiteSquare,
+  isNotWhiteTriangle,
+  triangleColorEqualsSquare,
+]);
