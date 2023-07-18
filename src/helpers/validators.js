@@ -10,17 +10,57 @@
  *
  * anyPass — то же самое, только удовлетворять значению может единственная функция-предикат из массива.
  *
- * Если какие либо функции написаны руками (без использования библиотек) это не является ошибкой
+ * Если какие-либо функции написаны руками (без использования библиотек) это не является ошибкой
  */
+import {
+  allPass,
+  compose,
+  curry,
+  equals,
+  keys,
+  not,
+  prop,
+  propEq,
+  props,
+  tap,
+  zip,
+  zipWith,
+} from "ramda";
+import { COLORS, SHAPES } from "../constants";
+
+function compareFirstAndSecond(x, y) {
+  return equals(x, y);
+}
+
+// COLORS
+const isRed = equals(COLORS.RED);
+const isBlue = equals(COLORS.BLUE);
+const isOrange = equals(COLORS.ORANGE);
+const isGreen = equals(COLORS.GREEN);
+const isWhite = equals(COLORS.WHITE);
+
+// SHAPES
+const getShapes = props([
+  SHAPES.CIRCLE,
+  SHAPES.SQUARE,
+  SHAPES.TRIANGLE,
+  SHAPES.STAR,
+]);
+
+const getCircle = prop(SHAPES.CIRCLE);
+const getSquare = prop(SHAPES.SQUARE);
+const getTriangle = prop(SHAPES.TRIANGLE);
+const getStar = prop(SHAPES.STAR);
+
+const isWhiteCircle = compose(isWhite, getCircle);
+const isGreenSquare = compose(isGreen, getSquare);
+const isWhiteTriangle = compose(isWhite, getTriangle);
+const isRedStar = compose(isRed, getStar);
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
-export const validateFieldN1 = ({star, square, triangle, circle}) => {
-    if (triangle !== 'white' || circle !== 'white') {
-        return false;
-    }
-
-    return star === 'red' && square === 'green';
-};
+export const validateFieldN1 = compose(
+  allPass([isWhiteCircle, isGreenSquare, isWhiteTriangle, isRedStar])
+);
 
 // 2. Как минимум две фигуры зеленые.
 export const validateFieldN2 = () => false;
