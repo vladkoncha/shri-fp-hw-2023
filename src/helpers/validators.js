@@ -13,18 +13,23 @@
  * Если какие-либо функции написаны руками (без использования библиотек) это не является ошибкой
  */
 import {
+  length,
   allPass,
   compose,
   curry,
   equals,
+  filter,
   keys,
   not,
   prop,
   propEq,
   props,
+  reduce,
   tap,
   zip,
   zipWith,
+  lt,
+  lte,
 } from "ramda";
 import { COLORS, SHAPES } from "../constants";
 
@@ -57,13 +62,15 @@ const isGreenSquare = compose(isGreen, getSquare);
 const isWhiteTriangle = compose(isWhite, getTriangle);
 const isRedStar = compose(isRed, getStar);
 
+const atLeastTwoPiecesGreen = compose(lte(2), length, filter(isGreen));
+
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
 export const validateFieldN1 = compose(
   allPass([isWhiteCircle, isGreenSquare, isWhiteTriangle, isRedStar])
 );
 
 // 2. Как минимум две фигуры зеленые.
-export const validateFieldN2 = () => false;
+export const validateFieldN2 = compose(atLeastTwoPiecesGreen, getShapes);
 
 // 3. Количество красных фигур равно кол-ву синих.
 export const validateFieldN3 = () => false;
