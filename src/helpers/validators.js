@@ -13,30 +13,17 @@
  * Если какие-либо функции написаны руками (без использования библиотек) это не является ошибкой
  */
 import {
-  length,
+  all,
   allPass,
   compose,
-  curry,
   equals,
   filter,
-  keys,
-  not,
-  prop,
-  propEq,
-  props,
-  reduce,
-  tap,
-  zip,
-  zipWith,
-  lt,
+  length,
   lte,
-  all,
+  prop,
+  props,
 } from "ramda";
 import { COLORS, SHAPES } from "../constants";
-
-function compareFirstAndSecond(x, y) {
-  return equals(x, y);
-}
 
 // COLORS
 const isRed = equals(COLORS.RED);
@@ -59,11 +46,21 @@ const getTriangle = prop(SHAPES.TRIANGLE);
 const getStar = prop(SHAPES.STAR);
 
 const isWhiteCircle = compose(isWhite, getCircle);
+const isBlueCircle = compose(isBlue, getCircle);
+
 const isGreenSquare = compose(isGreen, getSquare);
+const isOrangeSquare = compose(isOrange, getSquare);
+
 const isWhiteTriangle = compose(isWhite, getTriangle);
 const isRedStar = compose(isRed, getStar);
 
 const atLeastTwoPiecesGreen = compose(lte(2), length, filter(isGreen));
+const compareRedsAndBlues = (colorsArray) => {
+  const blues = filter(isBlue, colorsArray);
+  const reds = filter(isRed, colorsArray);
+
+  return length(blues) === length(reds);
+};
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
 export const validateFieldN1 = compose(
@@ -74,10 +71,12 @@ export const validateFieldN1 = compose(
 export const validateFieldN2 = compose(atLeastTwoPiecesGreen, getShapes);
 
 // 3. Количество красных фигур равно кол-ву синих.
-export const validateFieldN3 = () => false;
+export const validateFieldN3 = compose(compareRedsAndBlues, getShapes);
 
 // 4. Синий круг, красная звезда, оранжевый квадрат треугольник любого цвета
-export const validateFieldN4 = () => false;
+export const validateFieldN4 = compose(
+  allPass([isBlueCircle, isOrangeSquare, isRedStar])
+);
 
 // 5. Три фигуры одного любого цвета кроме белого (четыре фигуры одного цвета – это тоже true).
 export const validateFieldN5 = () => false;
@@ -87,7 +86,6 @@ export const validateFieldN6 = () => false;
 
 // 7. Все фигуры оранжевые.
 export const validateFieldN7 = compose(all(isOrange), getShapes);
-// export const validateFieldN7 = () => false;
 
 // 8. Не красная и не белая звезда, остальные – любого цвета.
 export const validateFieldN8 = () => false;
