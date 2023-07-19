@@ -18,25 +18,22 @@ import Api from "../tools/api";
 import {
   __,
   allPass,
+  andThen,
+  assoc,
   compose,
+  concat,
   gt,
   ifElse,
   length,
   lt,
+  otherwise,
   partial,
+  prop,
   tap,
   test,
 } from "ramda";
 
 const api = new Api();
-
-/**
- * Я – пример, удали меня
- */
-const wait = (time) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, time);
-  });
 
 const numberOfCharsLessThanTen = compose(lt(__, 10), length);
 const numberOfCharsMoreThanTwo = compose(gt(__, 2), length);
@@ -51,40 +48,68 @@ const isValidValue = allPass([
   isValueValidNumber,
 ]);
 
+const roundNumber = compose(Math.round, Number);
+const countNumberDigits = compose(length, String);
+const thenCountNumberDigits = andThen(countNumberDigits);
+
+const squareNumber = (number) => number ** 2;
+const thenSquareNumber = andThen(compose(squareNumber, Number));
+
+const remainderDividingByThree = (number) => number % 3;
+const thenGetRemainderDivByThree = andThen(
+  compose(String, remainderDividingByThree)
+);
+
+const getResult = prop("result");
+const thenGetResult = andThen(getResult);
+
+const assocDecToBinNumberOption = assoc("number", __, { from: 10, to: 2 });
+const convertDecToBin = compose(
+  api.get("https://api.tech/numbers/base"),
+  assocDecToBinNumberOption
+);
+
+const thenGetAnimalUrl = andThen(concat("https://animals.tech/"));
+const thenGetAnimal = andThen(api.get(__, {}));
+const thenGetRandomAnimal = compose(thenGetAnimal, thenGetAnimalUrl);
+
 const processSequence = ({ value, writeLog, handleSuccess, handleError }) => {
   const handleValidationError = partial(handleError, ["ValidationError"]);
+  const otherwiseHandleError = otherwise(handleError);
+
+  const thenHandleSuccess = andThen(handleSuccess);
+
   const writeLogValue = tap(writeLog);
+  const thenWriteLogValue = andThen(writeLogValue);
 
-  const sequence = writeLogValue;
+  const roundAndLog = compose(writeLogValue, roundNumber);
+  const convertToBinAndLog = compose(
+    thenWriteLogValue,
+    thenGetResult,
+    convertDecToBin
+  );
+  const countDigitsAndLog = compose(thenWriteLogValue, thenCountNumberDigits);
+  const squareNumberAndLog = compose(thenWriteLogValue, thenSquareNumber);
+  const getRemainderDivByThreeAndLog = compose(
+    thenWriteLogValue,
+    thenGetRemainderDivByThree
+  );
+  const getRandomAnimal = compose(thenGetResult, thenGetRandomAnimal);
 
-  const runSequence = ifElse(isValidValue, sequence, handleValidationError);
-  const writeLogAndRunSequence = compose(runSequence, writeLogValue);
+  const sequence = compose(
+    otherwiseHandleError,
+    thenHandleSuccess, // 9
+    getRandomAnimal, // 8
+    getRemainderDivByThreeAndLog, // 7
+    squareNumberAndLog, // 6
+    countDigitsAndLog, // 5
+    convertToBinAndLog, // 4
+    roundAndLog // 3
+  );
+
+  const runSequence = ifElse(isValidValue, sequence, handleValidationError); // 2
+  const writeLogAndRunSequence = compose(runSequence, writeLogValue); // 1
   writeLogAndRunSequence(value);
-
-  api
-    .get("https://api.tech/numbers/base", {
-      from: 2,
-      to: 10,
-      number: "01011010101",
-    })
-    .then(({ result }) => {
-      writeLog(result);
-    });
-
-  wait(2500)
-    .then(() => {
-      writeLog("SecondLog");
-
-      return wait(1500);
-    })
-    .then(() => {
-      writeLog("ThirdLog");
-
-      return wait(400);
-    })
-    .then(() => {
-      handleSuccess("Done");
-    });
 };
 
 export default processSequence;
